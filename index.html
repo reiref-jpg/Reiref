@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Colosseum Tannlege – Romplansystem</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --brand:#0078be;--brand-dk:#005f98;--brand-dp:#004a78;
+      --brand-lt:#e6f3fb;--brand-pale:#f0f8ff;--accent:#00a8e0;
+      --asst:#7c3aed;--asst-dk:#5b21b6;--asst-lt:#ede9fe;--asst-bd:#c4b5fd;--asst-pale:#f5f3ff;
+      --gold:#f0a500;--gold-dk:#d4920a;
+      --text-hd:#0a2540;--text-bd:#334155;--text-mu:#7a8fa8;
+      --border:#dde6ef;--bg:#f2f6fa;--white:#ffffff;
+      --sh-sm:0 1px 4px rgba(0,80,150,.08);
+      --sh-md:0 4px 20px rgba(0,80,150,.10);
+      --sh-lg:0 16px 48px rgba(0,80,150,.16);
+    }
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text-bd);min-height:100vh}
+
+    /* ── HEADER ── */
+    header{background:var(--white);border-bottom:3px solid var(--brand);box-shadow:0 2px 16px rgba(0,80,150,.10);display:flex;align-items:center;padding:0 36px;gap:0}
+    .hdr-logo{padding:16px 28px 16px 0;border-right:1px solid var(--border);margin-right:24px;display:flex;align-items:center}
+    .hdr-logo img{height:42px;display:block}
+    .hdr-title h1{font-size:1.05rem;font-weight:700;color:var(--text-hd);letter-spacing:-.2px}
+    .hdr-title p{font-size:.76rem;color:var(--text-mu);margin-top:2px}
+    .hdr-spacer{flex:1}
+    .hdr-stats{display:flex;align-items:center;gap:10px;padding:16px 0}
+    .hdr-stat{display:flex;flex-direction:column;align-items:center;background:var(--brand-pale);border:1.5px solid #c5dcee;border-radius:10px;padding:8px 20px}
+    .hdr-stat .sn{font-size:1.3rem;font-weight:800;color:var(--brand);line-height:1}
+    .hdr-stat .sl{font-size:.66rem;color:var(--text-mu);margin-top:3px;text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+    .accent-bar{height:4px;background:linear-gradient(90deg,var(--brand) 0%,var(--accent) 60%,#80d4f5 100%)}
+
+    /* ── DASHBOARD ── */
+    .dashboard{padding:20px 36px 4px;display:flex;flex-wrap:wrap;gap:12px}
+    .dash-card{background:var(--white);border-radius:14px;box-shadow:var(--sh-sm);border:1px solid var(--border);padding:16px 20px;flex:1;min-width:200px;position:relative;overflow:hidden}
+    .dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+    .dash-card.day-card::before{background:var(--brand)}
+    .dash-card.week-card::before{background:var(--accent)}
+    .dash-card.month-card::before{background:var(--gold)}
+    .dash-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-mu);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+    .dash-title .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+    .dash-metrics{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+    .dash-metric{display:flex;flex-direction:column;gap:3px}
+    .dash-metric .val{font-size:1.55rem;font-weight:800;line-height:1}
+    .dash-metric .lbl{font-size:.68rem;color:var(--text-mu);font-weight:500}
+    .dash-metric.booked .val{color:var(--brand)}
+    .dash-metric.asst-m .val{color:var(--asst)}
+    .dash-metric.avail .val{color:#16a34a}
+    .dash-metric.pct .val{color:var(--gold-dk)}
+    .dash-div{width:1px;background:var(--border);align-self:stretch;min-height:36px}
+    .dash-bar-wrap{margin-top:10px;height:5px;background:#e8edf2;border-radius:99px;overflow:hidden}
+    .dash-bar{height:100%;border-radius:99px;transition:width .5s ease;background:linear-gradient(90deg,var(--brand),var(--accent))}
+    .week-card .dash-bar{background:linear-gradient(90deg,var(--accent),#80d4f5)}
+    .month-card .dash-bar{background:linear-gradient(90deg,var(--gold),#fbbf24)}
+    .dash-days{display:flex;gap:4px;margin-top:10px;flex-wrap:wrap}
+    .day-pill{font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--brand-lt);color:var(--brand-dk);border:1px solid #b8ddf3}
+    .day-pill.today{background:var(--gold);color:white;border-color:var(--gold-dk)}
+    .day-pill.empty{background:#f1f5f9;color:var(--text-mu);border-color:var(--border)}
+
+    /* ── TOOLBAR ── */
+    .toolbar{display:flex;align-items:center;justify-content:space-between;padding:12px 36px;background:var(--white);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;box-shadow:var(--sh-sm)}
+    .tleft{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .week-nav{display:flex;align-items:center;gap:6px;background:var(--brand-pale);border:1.5px solid #c5dcee;border-radius:10px;padding:7px 14px;font-size:.88rem;font-weight:600;color:var(--brand-dk)}
+    .week-nav button{background:none;border:none;cursor:pointer;color:var(--brand);font-size:1.15rem;padding:0 3px;font-weight:700;line-height:1;transition:color .15s}
+    .week-nav button:hover{color:var(--brand-dp)}
+    .btn{padding:8px 18px;border-radius:9px;border:none;cursor:pointer;font-size:.83rem;font-weight:600;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+    .btn-primary{background:linear-gradient(135deg,var(--brand),var(--brand-dk));color:white;box-shadow:0 3px 10px rgba(0,120,190,.3)}
+    .btn-primary:hover{box-shadow:0 5px 16px rgba(0,120,190,.4);transform:translateY(-1px)}
+    .btn-ghost{background:white;color:var(--text-bd);border:1.5px solid var(--border)}
+    .btn-ghost:hover{background:var(--brand-pale);border-color:#c5dcee;color:var(--brand-dk)}
+    .legend{display:flex;align-items:center;gap:14px;font-size:.75rem;color:var(--text-mu);flex-wrap:wrap}
+    .leg{display:flex;align-items:center;gap:5px}
+    .leg-dot{width:9px;height:9px;border-radius:50%}
+    .leg-tag{font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px}
+    .leg-tag.dentist{background:var(--brand-lt);color:var(--brand-dk);border:1px solid #b8ddf3}
+    .leg-tag.assistant{background:var(--asst-lt);color:var(--asst-dk);border:1px solid var(--asst-bd)}
+
+    /* ── GRID ── */
+    .grid-wrap{overflow-x:auto;padding:20px 36px 48px}
+    table{width:100%;min-width:860px;border-collapse:separate;border-spacing:0;background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--sh-md)}
+    thead th{padding:14px 12px;text-align:center;font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;background:var(--brand);color:rgba(255,255,255,.85)}
+    thead th:first-child{text-align:left;padding-left:22px;width:148px;background:var(--brand-dp);color:rgba(255,255,255,.9);border-right:2px solid rgba(255,255,255,.15)}
+    thead th .day-name{font-size:.82rem;color:white;letter-spacing:.2px}
+    thead th .date-sub{display:block;font-size:.68rem;font-weight:400;opacity:.72;margin-top:3px;text-transform:none;letter-spacing:0}
+    thead th.today-col{background:linear-gradient(180deg,var(--gold),var(--gold-dk)) !important}
+    tbody tr{transition:background .1s}
+    tbody tr:hover td{background:#f5faff !important}
+    tbody tr:last-child td{border-bottom:none}
+    tbody td{border-bottom:1px solid #eef3f8;vertical-align:top;padding:10px}
+    tbody tr:nth-child(even) td{background:#fafcfe}
+    tbody td:first-child{border-right:2px solid #dde6ef;padding:12px 14px 12px 22px;background:white !important}
+    tbody tr:nth-child(even) td:first-child{background:#fafcfe !important}
+    .room-badge{display:flex;align-items:center;gap:8px}
+    .room-num{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand-dk));color:white;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(0,120,190,.28)}
+    .room-lbl{font-size:.82rem;font-weight:600;color:var(--text-hd)}
+    .room-sub{font-size:.68rem;color:var(--text-mu);margin-top:1px}
+    td.today-col{background:#fffbf0 !important;border-left:2px solid var(--gold);border-right:2px solid var(--gold)}
+
+    /* ── CELL ── */
+    .cell{min-height:86px;display:flex;flex-direction:column;gap:0}
+
+    /* Dentist section */
+    .cell-section{display:flex;flex-direction:column;gap:4px;padding:5px 0}
+    .cell-section + .cell-section{border-top:1px dashed #e2e8f0;padding-top:6px;margin-top:2px}
+    .section-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;display:flex;align-items:center;gap:4px}
+    .section-label.lbl-dentist{color:var(--brand)}
+    .section-label.lbl-asst{color:var(--asst)}
+    .section-label svg{width:10px;height:10px;flex-shrink:0}
+
+    /* Dentist tag – blue */
+    .name-tag{display:flex;align-items:center;gap:7px;border-radius:8px;padding:5px 9px;font-size:.79rem;font-weight:600;animation:tagIn .2s ease;transition:box-shadow .15s}
+    .name-tag.tag-dentist{background:linear-gradient(135deg,#e8f5fd,#d5ecf9);border:1px solid #b8ddf3;color:var(--brand-dk);box-shadow:0 1px 4px rgba(0,120,190,.10)}
+    .name-tag.tag-dentist:hover{box-shadow:0 2px 8px rgba(0,120,190,.18)}
+    /* Assistant tag – purple */
+    .name-tag.tag-asst{background:linear-gradient(135deg,#ede9fe,#ddd6fe);border:1px solid var(--asst-bd);color:var(--asst-dk);box-shadow:0 1px 4px rgba(124,58,237,.10)}
+    .name-tag.tag-asst:hover{box-shadow:0 2px 8px rgba(124,58,237,.18)}
+
+    .avatar{width:22px;height:22px;border-radius:50%;color:white;font-size:.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .avatar.av-dentist{background:linear-gradient(135deg,var(--brand),var(--accent));box-shadow:0 1px 4px rgba(0,120,190,.3)}
+    .avatar.av-asst{background:linear-gradient(135deg,var(--asst),#a855f7);box-shadow:0 1px 4px rgba(124,58,237,.3)}
+
+    .tag-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .del-btn{background:none;border:none;cursor:pointer;font-size:1rem;line-height:1;padding:0;transition:color .15s}
+    .del-btn.del-dentist{color:#90c4e0}.del-btn.del-dentist:hover{color:#ef4444}
+    .del-btn.del-asst{color:var(--asst-bd)}.del-btn.del-asst:hover{color:#ef4444}
+
+    /* Add buttons */
+    .add-btn{background:none;border:1.5px dashed;border-radius:7px;font-size:.7rem;font-family:inherit;padding:3px 8px;cursor:pointer;text-align:left;transition:all .15s;margin-top:2px;font-weight:600}
+    .add-btn.add-dentist{border-color:#c5dcee;color:var(--brand);}.add-btn.add-dentist:hover{background:var(--brand-pale);border-color:var(--brand)}
+    .add-btn.add-asst{border-color:var(--asst-bd);color:var(--asst);}.add-btn.add-asst:hover{background:var(--asst-pale);border-color:var(--asst)}
+    .add-btn.hidden{display:none}
+
+    /* Inline inputs */
+    .inline-input{display:flex;gap:4px;margin-top:2px}
+    .inline-input input{flex:1;border:1.5px solid;border-radius:7px;padding:4px 8px;font-size:.78rem;font-family:inherit;outline:none;min-width:0}
+    .inline-input.inp-dentist input{border-color:var(--brand);background:var(--brand-pale);color:var(--text-hd)}
+    .inline-input.inp-asst input{border-color:var(--asst);background:var(--asst-pale);color:var(--text-hd)}
+    .inline-input button{color:white;border:none;border-radius:7px;padding:4px 9px;cursor:pointer;font-size:.8rem;font-weight:700;font-family:inherit;transition:background .15s}
+    .inline-input.inp-dentist button.ok{background:var(--brand)}.inline-input.inp-dentist button.ok:hover{background:var(--brand-dk)}
+    .inline-input.inp-asst button.ok{background:var(--asst)}.inline-input.inp-asst button.ok:hover{background:var(--asst-dk)}
+    .inline-input button.cancel{background:#e8edf2;color:var(--text-bd)}.inline-input button.cancel:hover{background:#d5dde6}
+    .inline-input.hidden{display:none}
+
+    @keyframes tagIn{from{opacity:0;transform:translateY(-5px) scale(.97)}to{opacity:1;transform:none}}
+
+    footer{text-align:center;font-size:.71rem;color:var(--text-mu);padding:0 36px 28px}
+
+    /* ── MODAL ── */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,37,64,.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+    .modal-overlay.open{display:flex}
+    .modal{background:var(--white);border-radius:18px;padding:32px;width:92%;max-width:460px;box-shadow:var(--sh-lg);animation:mIn .22s cubic-bezier(.34,1.3,.64,1);position:relative}
+    @keyframes mIn{from{transform:translateY(20px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+    .modal-hdr{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+    .modal-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+    .modal-icon svg{width:20px;height:20px;fill:white}
+    .modal-icon.ic-dentist{background:linear-gradient(135deg,var(--brand),var(--brand-dk))}
+    .modal-icon.ic-asst{background:linear-gradient(135deg,var(--asst),var(--asst-dk))}
+    .modal h2{font-size:1.05rem;font-weight:700;color:var(--text-hd)}
+    .modal label{font-size:.76rem;font-weight:600;color:var(--text-mu);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px}
+    .modal input,.modal select{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:10px 13px;font-size:.88rem;font-family:inherit;outline:none;margin-bottom:16px;color:var(--text-hd);background:var(--bg);transition:border-color .15s,box-shadow .15s}
+    .modal input:focus,.modal select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(0,120,190,.12);background:white}
+    .modal-type-tabs{display:flex;gap:8px;margin-bottom:18px}
+    .type-tab{flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:var(--bg);cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:600;color:var(--text-mu);transition:all .15s;text-align:center}
+    .type-tab.active-dentist{border-color:var(--brand);background:var(--brand-pale);color:var(--brand-dk)}
+    .type-tab.active-asst{border-color:var(--asst);background:var(--asst-pale);color:var(--asst-dk)}
+    .type-tab:hover{border-color:var(--border);}
+    .modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:4px}
+    .modal-x{position:absolute;top:16px;right:18px;background:none;border:none;cursor:pointer;color:var(--text-mu);font-size:1.4rem;line-height:1;transition:color .15s}
+    .modal-x:hover{color:var(--text-hd)}
+    #modal-add-btn.dentist-btn{background:linear-gradient(135deg,var(--brand),var(--brand-dk))}
+    #modal-add-btn.asst-btn{background:linear-gradient(135deg,var(--asst),var(--asst-dk))}
+
+    @media(max-width:640px){
+      header,.toolbar,.grid-wrap,footer,.dashboard{padding-left:16px;padding-right:16px}
+      .hdr-stats{display:none}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-logo">
+    <img src="data:image/png;base64,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" alt="Colosseum Tannlege"/>
+  </div>
+  <div class="hdr-title">
+    <h1>Romplansystem</h1>
+    <p>Ukentlig oversikt over behandlingsrom</p>
+  </div>
+  <div class="hdr-spacer"></div>
+  <div class="hdr-stats">
+    <div class="hdr-stat"><div class="sn">12</div><div class="sl">Behandlingsrom</div></div>
+    <div class="hdr-stat"><div class="sn">5</div><div class="sl">Dager</div></div>
+  </div>
+</header>
+<div class="accent-bar"></div>
+
+<div class="dashboard" id="dashboard"></div>
+
+<div class="toolbar">
+  <div class="tleft">
+    <div class="week-nav">
+      <button onclick="shiftWeek(-1)">&#8249;</button>
+      <span id="week-label">Laster...</span>
+      <button onclick="shiftWeek(1)">&#8250;</button>
+    </div>
+    <button class="btn btn-ghost" onclick="goToday()">I dag</button>
+    <button class="btn btn-primary" onclick="openModal('dentist')">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+      Legg til
+    </button>
+  </div>
+  <div class="legend">
+    <span style="font-size:.73rem;color:var(--text-mu);font-weight:600">Fargekode:</span>
+    <span class="leg-tag dentist">
+      <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><circle cx="4.5" cy="4.5" r="4" fill="#0078be"/></svg>
+      Tannlege / Spesialist
+    </span>
+    <span class="leg-tag assistant">
+      <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><circle cx="4.5" cy="4.5" r="4" fill="#7c3aed"/></svg>
+      Assistent
+    </span>
+    <span class="leg"><span class="leg-dot" style="background:var(--gold)"></span>I dag</span>
+  </div>
+</div>
+
+<div class="grid-wrap">
+  <table>
+    <thead><tr id="hrow"><th>Rom</th></tr></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<footer>Colosseum Tannlege &mdash; Romplansystem &middot; Data lagres lokalt i nettleseren</footer>
+
+<div class="modal-overlay" id="modal" onclick="closeOverlay(event)">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">&times;</button>
+    <div class="modal-hdr">
+      <div class="modal-icon ic-dentist" id="modal-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      </div>
+      <h2 id="modal-title">Legg til i rom</h2>
+    </div>
+
+    <!-- Type selector tabs -->
+    <div class="modal-type-tabs">
+      <button class="type-tab active-dentist" id="tab-dentist" onclick="setModalType('dentist')">
+        &#9670; Tannlege / Spesialist
+      </button>
+      <button class="type-tab" id="tab-asst" onclick="setModalType('asst')">
+        &#9670; Assistent
+      </button>
+    </div>
+
+    <label for="m-name">Navn</label>
+    <input id="m-name" type="text" placeholder="f.eks. Dr. Hansen" autocomplete="off"/>
+    <label for="m-room">Rom</label>
+    <select id="m-room"></select>
+    <label for="m-day">Dag</label>
+    <select id="m-day">
+      <option value="0">Mandag</option><option value="1">Tirsdag</option>
+      <option value="2">Onsdag</option><option value="3">Torsdag</option>
+      <option value="4">Fredag</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Avbryt</button>
+      <button class="btn btn-primary dentist-btn" id="modal-add-btn" onclick="addFromModal()">Legg til</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DAYS=['Mandag','Tirsdag','Onsdag','Torsdag','Fredag'];
+const DAYS_S=['Man','Tir','Ons','Tor','Fre'];
+const ROOMS=12, MAX_D=3, MAX_A=2, KEY='colosseum_v4';
+let weekOff=0, data=load(), modalType='dentist';
+
+/* ── Data ── */
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(raw) return JSON.parse(raw);
+    // migrate from old format
+    const old=localStorage.getItem('colosseum_v3')||localStorage.getItem('colosseum_v2');
+    if(old){
+      const oldD=JSON.parse(old);
+      const d={};
+      for(let r=1;r<=ROOMS;r++){
+        d[r]={};
+        for(let di=0;di<5;di++){
+          const names=Array.isArray(oldD[r])?oldD[r]:((oldD[r]&&oldD[r][di])||[]);
+          d[r][di]={dentists:names,assistants:[]};
+        }
+      }
+      return d;
+    }
+  }catch(e){}
+  const d={};
+  for(let r=1;r<=ROOMS;r++){
+    d[r]={};for(let di=0;di<5;di++) d[r][di]={dentists:[],assistants:[]};
+  }
+  return d;
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+function cell(r,d){
+  if(!data[r]) data[r]={};
+  if(!data[r][d]||!data[r][d].dentists) data[r][d]={dentists:[],assistants:[]};
+  return data[r][d];
+}
+
+/* ── Date helpers ── */
+function monday(off){
+  const n=new Date(),day=n.getDay(),diff=day===0?-6:1-day;
+  const m=new Date(n);m.setDate(n.getDate()+diff+off*7);m.setHours(0,0,0,0);return m;
+}
+function weekDates(off){const m=monday(off);return[0,1,2,3,4].map(i=>{const d=new Date(m);d.setDate(m.getDate()+i);return d;});}
+function fmt(d){return d.toLocaleDateString('nb-NO',{day:'numeric',month:'short'});}
+function isToday(d){const n=new Date();return d.getDate()===n.getDate()&&d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}
+function weekNum(d){const u=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));u.setUTCDate(u.getUTCDate()+4-(u.getUTCDay()||7));const y=new Date(Date.UTC(u.getUTCFullYear(),0,1));return Math.ceil((((u-y)/86400000)+1)/7);}
+function workdaysInMonth(yr,mo){const days=[];const d=new Date(yr,mo,1);while(d.getMonth()===mo){const wd=d.getDay();if(wd>=1&&wd<=5)days.push(new Date(d));d.setDate(d.getDate()+1);}return days;}
+
+/* ── Stats ── */
+function dayStats(di){
+  let d=0,a=0;
+  for(let r=1;r<=ROOMS;r++){const c=cell(r,di);d+=c.dentists.length;a+=c.assistants.length;}
+  return{dentists:d,assistants:a,cap:ROOMS*MAX_D,acap:ROOMS*MAX_A};
+}
+function weekStats(){
+  let d=0,a=0;
+  for(let r=1;r<=ROOMS;r++)for(let di=0;di<5;di++){const c=cell(r,di);d+=c.dentists.length;a+=c.assistants.length;}
+  const cap=ROOMS*5*MAX_D,acap=ROOMS*5*MAX_A;
+  return{dentists:d,assistants:a,cap,acap,pct:Math.round(d/cap*100)};
+}
+function monthStats(yr,mo){
+  const mdays=workdaysInMonth(yr,mo);
+  let d=0,a=0,cap=mdays.length*ROOMS*MAX_D;
+  mdays.forEach(dt=>{const di=dt.getDay()-1;for(let r=1;r<=ROOMS;r++){const c=cell(r,di);d+=c.dentists.length;a+=c.assistants.length;}});
+  return{dentists:d,assistants:a,cap,pct:cap>0?Math.round(d/cap*100):0};
+}
+
+/* ── Dashboard ── */
+function renderDashboard(){
+  const dates=weekDates(weekOff);
+  const now=new Date();
+  let todayDi=-1;dates.forEach((d,i)=>{if(isToday(d))todayDi=i;});
+
+  const wk=weekStats();
+  const mo=monthStats(now.getFullYear(),now.getMonth());
+
+  const pillsHtml=dates.map((d,i)=>{
+    const st=dayStats(i);
+    const pct=st.cap>0?Math.round(st.dentists/st.cap*100):0;
+    const cls=isToday(d)?'today':st.dentists>0?'':'empty';
+    return `<span class="day-pill ${cls}" title="${DAYS[i]}: ${st.dentists} tannleger, ${st.assistants} assistenter">${DAYS_S[i]} ${pct}%</span>`;
+  }).join('');
+
+  let todayCard='';
+  if(todayDi>=0){
+    const st=dayStats(todayDi);
+    const pct=st.cap>0?Math.round(st.dentists/st.cap*100):0;
+    todayCard=`<div class="dash-card day-card">
+      <div class="dash-title"><span class="dot" style="background:var(--brand)"></span>I dag</div>
+      <div class="dash-metrics">
+        <div class="dash-metric booked"><div class="val">${st.dentists}</div><div class="lbl">Tannleger</div></div>
+        <div class="dash-div"></div>
+        <div class="dash-metric asst-m"><div class="val">${st.assistants}</div><div class="lbl">Assistenter</div></div>
+        <div class="dash-div"></div>
+        <div class="dash-metric pct"><div class="val">${pct}%</div><div class="lbl">Utnyttelse</div></div>
+      </div>
+      <div class="dash-bar-wrap"><div class="dash-bar" style="width:${pct}%"></div></div>
+    </div>`;
+  } else {
+    todayCard=`<div class="dash-card day-card"><div class="dash-title"><span class="dot" style="background:var(--brand)"></span>I dag</div><div style="font-size:.8rem;color:var(--text-mu);margin-top:4px">Ikke en arbeidsdag</div></div>`;
+  }
+
+  document.getElementById('dashboard').innerHTML=todayCard+`
+    <div class="dash-card week-card">
+      <div class="dash-title"><span class="dot" style="background:var(--accent)"></span>Denne uken (Uke ${weekNum(dates[0])})</div>
+      <div class="dash-metrics">
+        <div class="dash-metric booked"><div class="val">${wk.dentists}</div><div class="lbl">Tannleger</div></div>
+        <div class="dash-div"></div>
+        <div class="dash-metric asst-m"><div class="val">${wk.assistants}</div><div class="lbl">Assistenter</div></div>
+        <div class="dash-div"></div>
+        <div class="dash-metric pct"><div class="val">${wk.pct}%</div><div class="lbl">Utnyttelse</div></div>
+      </div>
+      <div class="dash-bar-wrap"><div class="dash-bar" style="width:${wk.pct}%"></div></div>
+      <div class="dash-days">${pillsHtml}</div>
+    </div>
+    <div class="dash-card month-card">
+      <div class="dash-title"><span class="dot" style="background:var(--gold)"></span>${now.toLocaleDateString('nb-NO',{month:'long',year:'numeric'})}</div>
+      <div class="dash-metrics">
+        <div class="dash-metric booked"><div class="val">${mo.dentists}</div><div class="lbl">Tannleger</div></div>
+        <div class="dash-div"></div>
+        <div class="dash-metric asst-m"><div class="val">${mo.assistants}</div><div class="lbl">Assistenter</div></div>
+        <div class="dash-div"></div>
+        <div class="dash-metric pct"><div class="val">${mo.pct}%</div><div class="lbl">Utnyttelse</div></div>
+      </div>
+      <div class="dash-bar-wrap"><div class="dash-bar" style="width:${mo.pct}%"></div></div>
+    </div>`;
+}
+
+/* ── Nav ── */
+function shiftWeek(d){weekOff+=d;render();}
+function goToday(){weekOff=0;render();}
+
+/* ── Render table ── */
+function render(){
+  const dates=weekDates(weekOff);
+  document.getElementById('week-label').textContent=
+    'Uke '+weekNum(dates[0])+' \u00B7 '+fmt(dates[0])+' \u2013 '+fmt(dates[4])+' '+dates[4].getFullYear();
+
+  const hr=document.getElementById('hrow');
+  while(hr.children.length>1)hr.removeChild(hr.lastChild);
+  dates.forEach((d,i)=>{
+    const th=document.createElement('th');
+    th.className=isToday(d)?'today-col':'';
+    th.innerHTML='<span class="day-name">'+DAYS[i]+'</span><span class="date-sub">'+fmt(d)+'</span>';
+    hr.appendChild(th);
+  });
+
+  const tb=document.getElementById('tbody');tb.innerHTML='';
+  for(let r=1;r<=ROOMS;r++){
+    const tr=document.createElement('tr');
+    const td0=document.createElement('td');
+    td0.innerHTML='<div class="room-badge"><div class="room-num">'+r+'</div><div><div class="room-lbl">Rom '+r+'</div><div class="room-sub">Behandling #'+r+'</div></div></div>';
+    tr.appendChild(td0);
+    for(let di=0;di<5;di++){
+      const td=document.createElement('td');
+      if(isToday(dates[di]))td.classList.add('today-col');
+      td.dataset.room=r;td.dataset.day=di;
+      td.appendChild(buildCell(r,di));tr.appendChild(td);
+    }
+    tb.appendChild(tr);
+  }
+  renderDashboard();
+}
+
+/* ── Build cell ── */
+function buildCell(r,d){
+  const wrap=document.createElement('div');wrap.className='cell';wrap.id='c-'+r+'-'+d;
+  const c=cell(r,d);
+
+  /* --- Dentist section --- */
+  const dsec=document.createElement('div');dsec.className='cell-section';
+  const dlbl=document.createElement('div');dlbl.className='section-label lbl-dentist';
+  dlbl.innerHTML='<svg viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" fill="#0078be"/></svg> Tannlege / Spesialist';
+  dsec.appendChild(dlbl);
+  c.dentists.forEach((n,i)=>dsec.appendChild(nameTag(n,'dentist',r,d,i)));
+  const dAdd=document.createElement('button');
+  dAdd.className='add-btn add-dentist'+(c.dentists.length>=MAX_D?' hidden':'');
+  dAdd.textContent='+ Legg til tannlege';dAdd.onclick=()=>showInput(r,d,'dentist');dsec.appendChild(dAdd);
+  const dInp=inlineInput(r,d,'dentist');dsec.appendChild(dInp);
+  wrap.appendChild(dsec);
+
+  /* --- Assistant section --- */
+  const asec=document.createElement('div');asec.className='cell-section';
+  const albl=document.createElement('div');albl.className='section-label lbl-asst';
+  albl.innerHTML='<svg viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" fill="#7c3aed"/></svg> Assistent';
+  asec.appendChild(albl);
+  c.assistants.forEach((n,i)=>asec.appendChild(nameTag(n,'asst',r,d,i)));
+  const aAdd=document.createElement('button');
+  aAdd.className='add-btn add-asst'+(c.assistants.length>=MAX_A?' hidden':'');
+  aAdd.textContent='+ Legg til assistent';aAdd.onclick=()=>showInput(r,d,'asst');asec.appendChild(aAdd);
+  const aInp=inlineInput(r,d,'asst');asec.appendChild(aInp);
+  wrap.appendChild(asec);
+
+  return wrap;
+}
+
+function nameTag(name,type,r,d,i){
+  const el=document.createElement('div');
+  el.className='name-tag tag-'+type;
+  const init=name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+  const av=document.createElement('div');av.className='avatar av-'+type;av.textContent=init;
+  const sp=document.createElement('span');sp.className='tag-name';sp.title=name;sp.textContent=name;
+  const btn=document.createElement('button');btn.className='del-btn del-'+type;btn.innerHTML='&times;';
+  btn.onclick=()=>delName(r,d,type,i);
+  el.appendChild(av);el.appendChild(sp);el.appendChild(btn);return el;
+}
+
+function inlineInput(r,d,type){
+  const wrap=document.createElement('div');
+  wrap.className='inline-input inp-'+type+' hidden';wrap.id='i-'+r+'-'+d+'-'+type;
+  const inp=document.createElement('input');inp.type='text';inp.placeholder=type==='dentist'?'Navn på tannlege...':'Navn på assistent...';inp.maxLength=40;inp.autocomplete='off';
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')confirmAdd(r,d,type);if(e.key==='Escape')cancelInput(r,d,type);});
+  const ok=document.createElement('button');ok.className='ok';ok.innerHTML='&#10003;';ok.onclick=()=>confirmAdd(r,d,type);
+  const cn=document.createElement('button');cn.className='cancel';cn.innerHTML='&#10005;';cn.onclick=()=>cancelInput(r,d,type);
+  wrap.appendChild(inp);wrap.appendChild(ok);wrap.appendChild(cn);return wrap;
+}
+
+function showInput(r,d,type){
+  const sec=document.getElementById('c-'+r+'-'+d).querySelector('.add-btn.add-'+type);
+  if(sec)sec.classList.add('hidden');
+  const inp=document.getElementById('i-'+r+'-'+d+'-'+type);
+  if(inp){inp.classList.remove('hidden');inp.querySelector('input').focus();}
+}
+function cancelInput(r,d,type){
+  const inp=document.getElementById('i-'+r+'-'+d+'-'+type);if(inp)inp.classList.add('hidden');
+  const c=cell(r,d);
+  const max=type==='dentist'?MAX_D:MAX_A;
+  const arr=type==='dentist'?c.dentists:c.assistants;
+  if(arr.length<max){
+    const sec=document.getElementById('c-'+r+'-'+d);
+    if(sec){const btn=sec.querySelector('.add-btn.add-'+type);if(btn)btn.classList.remove('hidden');}
+  }
+}
+function confirmAdd(r,d,type){
+  const inp=document.getElementById('i-'+r+'-'+d+'-'+type);
+  if(!inp)return;const n=inp.querySelector('input').value.trim();
+  if(!n){inp.querySelector('input').focus();return;}
+  addName(r,d,type,n);
+}
+function addName(r,d,type,name){
+  const c=cell(r,d);
+  const arr=type==='dentist'?c.dentists:c.assistants;
+  const max=type==='dentist'?MAX_D:MAX_A;
+  if(arr.length>=max)return;
+  arr.push(name);save();refresh(r,d);renderDashboard();
+}
+function delName(r,d,type,i){
+  const c=cell(r,d);
+  const arr=type==='dentist'?c.dentists:c.assistants;
+  arr.splice(i,1);save();refresh(r,d);renderDashboard();
+}
+function refresh(r,d){
+  const td=document.querySelector('td[data-room="'+r+'"][data-day="'+d+'"]');
+  if(!td)return;td.innerHTML='';td.appendChild(buildCell(r,d));
+}
+
+/* ── Modal ── */
+function setModalType(type){
+  modalType=type;
+  document.getElementById('tab-dentist').className='type-tab'+(type==='dentist'?' active-dentist':'');
+  document.getElementById('tab-asst').className='type-tab'+(type==='asst'?' active-asst':'');
+  document.getElementById('modal-icon').className='modal-icon ic-'+type;
+  document.getElementById('modal-title').textContent=type==='dentist'?'Legg til tannlege i rom':'Legg til assistent i rom';
+  document.getElementById('m-name').placeholder=type==='dentist'?'f.eks. Dr. Hansen':'f.eks. Assistent Olsen';
+  document.getElementById('modal-add-btn').className='btn btn-primary '+(type==='dentist'?'dentist-btn':'asst-btn');
+  document.getElementById('modal-add-btn').style.background=type==='dentist'?'linear-gradient(135deg,#0078be,#005f98)':'linear-gradient(135deg,#7c3aed,#5b21b6)';
+}
+function openModal(type){
+  setModalType(type||'dentist');
+  const s=document.getElementById('m-room');s.innerHTML='';
+  for(let r=1;r<=ROOMS;r++){const o=document.createElement('option');o.value=r;o.textContent='Rom '+r;s.appendChild(o);}
+  document.getElementById('m-name').value='';
+  document.getElementById('modal').classList.add('open');
+  setTimeout(()=>document.getElementById('m-name').focus(),80);
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function closeOverlay(e){if(e.target===document.getElementById('modal'))closeModal();}
+function addFromModal(){
+  const name=document.getElementById('m-name').value.trim();
+  if(!name){document.getElementById('m-name').focus();return;}
+  addName(parseInt(document.getElementById('m-room').value),parseInt(document.getElementById('m-day').value),modalType,name);
+  closeModal();
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+document.getElementById('m-name').addEventListener('keydown',e=>{if(e.key==='Enter')addFromModal();});
+render();
+</script>
+</body>
+</html>
